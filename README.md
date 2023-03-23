@@ -8,7 +8,7 @@ Multiple [`Granularity`] modes are supported for various applications, which con
 
 The following is an example of the basic [`Granularity::Character`] mode:
 
-```
+```rust
 # use string_ring::*;
 // example of a 16-byte circular string buffer
 let mut buf = StringRing::new(16, Granularity::Character);
@@ -20,14 +20,26 @@ assert_eq!(buf.make_contiguous(), "ld!more content!");
 
 The following is an example of the [`Granularity::Line`] mode, which is often more useful for logging:
 
-```
+```rust
 # use string_ring::*;
 // example of a 26-byte circular string buffer
 let mut buf = StringRing::new(26, Granularity::Line);
 buf.push("hello world!\n");
 assert_eq!(buf.make_contiguous(), "hello world!\n");
-buf.push("more stuff!\n");
-assert_eq!(buf.make_contiguous(), "hello world!\nmore stuff!\n");
+buf.push("more!\n");
+assert_eq!(buf.make_contiguous(), "hello world!\nmore!\n");
 buf.push("too much!\n");
-assert_eq!(buf.make_contiguous(), "more stuff!\ntoo much!\n");
+assert_eq!(buf.make_contiguous(), "more!\ntoo much!\n");
 ```
+
+## no-std
+
+This crate supports building in `no-std` environments by disabling default features:
+
+```toml
+[dependencies]
+string-ring = { version = "...", use-default-features = false }
+```
+
+Note that the `alloc` crate is still required in this case,
+as there is not currently a heapless version of [`StringRing`].
