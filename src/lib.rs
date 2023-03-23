@@ -51,6 +51,10 @@ pub enum Granularity {
     /// Remove as few characters as possible (may result in partial lines at the beginning).
     Character,
     /// Remove entire lines at a time, but always as few lines as possible.
+    /// 
+    /// In this mode, if a removed line does not end with a new line character, all content will be deleted
+    /// and future input will be discarded until a new line character is encountered.
+    /// This is to guarantee that pushing `a` followed by `b` is equivalent to pushing `a + b`.
     Line,
 }
 
@@ -181,6 +185,18 @@ fn test_string_ring_char() {
     assert_eq!(buf.make_contiguous(), "orldthis is a test");
     buf.push("this is a really long string that will go over the buffer limit");
     assert_eq!(buf.make_contiguous(), "r the buffer limit");
+    buf.push("한국");
+    assert_eq!(buf.make_contiguous(), "buffer limit한국");
+    buf.push("more content");
+    assert_eq!(buf.make_contiguous(), "한국more content");
+    buf.push("a");
+    assert_eq!(buf.make_contiguous(), "국more contenta");
+    buf.push("b");
+    assert_eq!(buf.make_contiguous(), "국more contentab");
+    buf.push("c");
+    assert_eq!(buf.make_contiguous(), "국more contentabc");
+    buf.push("def");
+    assert_eq!(buf.make_contiguous(), "more contentabcdef");
 }
 #[test]
 fn test_string_ring_line() {
